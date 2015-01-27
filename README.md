@@ -1,5 +1,5 @@
 # FireGame
-This is a java game that is supposed to end up being a guy shooting fire at enemies
+This is a java game that is supposed to end up as a 1 v 1 game so you can fight your friends. In the DBZ universe.
 <h1>CONTROLS</h1>
 <table style = "width:100%;table-layout:fixed;">
 <tr><td>Shoot</td><td>ENTER</td></tr>
