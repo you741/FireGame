@@ -20,6 +20,11 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 	boolean isQuit = false;
 	boolean shouldRun = true;
 	boolean fired = false;
+	boolean transformed = false;
+	boolean jump = false;
+	
+	int count = 0;
+	int jTimer = -1;
 	
 	public MainFrame(FightPane pane){
 		mpane = pane;
@@ -42,26 +47,62 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 		int keyCode = arg0.getKeyCode();
 		switch(keyCode){
 		case KeyEvent.VK_ENTER:
-			//Color lineC = new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
-			if(!fired){
-				mpane.fire(0);
-				fired = true;
-			}else{
-				mpane.fire(2);
-				fired = false;
+			if(!mpane.paused){
+				//Color lineC = new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
+				if(!fired){
+					mpane.fire(0);
+					fired = true;
+				}else{
+					mpane.fire(2);
+					fired = false;
+				}
 			}
 			break;
+		case KeyEvent.VK_SPACE:
+			if(!mpane.paused)
+				jump = true;
+			break;
 		case KeyEvent.VK_UP:
-			mpane.moveUp(3);
+			if(!mpane.paused)
+				mpane.moveUp();
 			break;
 		case KeyEvent.VK_DOWN:
-			mpane.moveDown(3);
+			if(!mpane.paused)
+				mpane.moveDown();
 			break;
 		case KeyEvent.VK_LEFT:
-			mpane.moveLeft(3);
+			if(!mpane.paused)
+				mpane.moveLeft();
 			break;
 		case KeyEvent.VK_RIGHT:
-			mpane.moveRight(3);
+			if(!mpane.paused)
+				mpane.moveRight();
+			break;
+		case KeyEvent.VK_X:
+			if(!mpane.paused){
+				if(!transformed){
+					int luck = (int)(100*Math.random());
+					if(luck > 45 && luck < 55){
+						mpane.setSpeed(10);
+						mpane.setColor(Color.yellow);
+						mpane.setFSpeed(5);
+						mpane.setFColor(Color.YELLOW);
+						count = 1000;
+						transformed = true;
+						mpane.setMsg("SUPER SAIYAN!!");
+					} else{
+						mpane.setMsg("Super Saiyan failed...");
+					}
+				}
+			}
+			break;
+		case KeyEvent.VK_P:
+			shouldRun = shouldRun?false:true;
+			if(shouldRun)
+				mpane.unpause();
+			else{
+				mpane.pause();
+			}
 			break;
 		case KeyEvent.VK_ESCAPE:
 			dispose();
@@ -71,12 +112,13 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 			break;
 		
 		}
+		mpane.repaint();
 	}
 
 	@Override
 	public void keyReleased(KeyEvent arg0) {
 		// TODO Auto-generated method stub
-
+		int keyCode = arg0.getKeyCode();
 	}
 
 	@Override
@@ -88,19 +130,41 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
+
 		while(!isQuit){
-			System.out.println("FIRE");
 			if(shouldRun){
+				count--;
+				jTimer--;
+				int jumpHeight = !transformed?10:100;
 				if(fired){
 					mpane.fire(1);
-
-					try {
-						Thread.sleep(10);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
 				}
+				if(jump){
+					mpane.setY(mpane.getY()-jumpHeight);
+					jTimer = 10;
+					mpane.repaint();
+					jump = false;
+				}
+				if(jTimer == 0){
+					mpane.setY(mpane.getY()+jumpHeight);
+	
+				}
+				if(count<=0){
+					mpane.setSpeed(3);
+					mpane.setColor(Color.black);
+					mpane.setFSpeed(1);
+					mpane.setFColor(Color.red);
+					if(transformed)
+						mpane.setMsg("Normal Again...");
+					transformed = false;	
+				}
+			}
+			try {
+				mpane.repaint();
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}

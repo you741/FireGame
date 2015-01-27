@@ -15,12 +15,16 @@ public class FightPane extends JPanel implements MouseListener{
 	private static final long serialVersionUID = 1L;
 	
 
-	int x = 0;
-	int y = 0;
+	int x = 50;
+	int y = 50;
 	int fx = x;
 	int fy = y;
-	
+	int speed = 3;
+	int fspeed = 1;
 	boolean shouldFire = false;
+	boolean paused = false;
+	String inf = "Bob The Saiyan HP: 50";
+	String msg = "";
 	
 	Color lineCol = new Color(0,0,0);
 	Color fireCol = new Color(255,0,0);
@@ -28,27 +32,35 @@ public class FightPane extends JPanel implements MouseListener{
 		setLayout(new GridBagLayout());
 		addMouseListener(this);
 	}
+	public void setMsg(String newMsg){
+		msg = newMsg;
+	}
+	public void setInf(String newInf){
+		inf = newInf;
+	}
+	public void setSpeed(int newS){
+		speed = newS;
+	}
+	public void setFSpeed(int newS){
+		fspeed = newS;
+	}
 	public void setColor(Color newC){
 		lineCol = newC;
 	}
 	public void setFColor(Color newC){
 		fireCol = newC;
 	}
-	public void moveLeft(int distance){
-		x -= distance;
-		repaint();
+	public void moveLeft(){
+		x -= speed;
 	}
-	public void moveRight(int distance){
-		x += distance;
-		repaint();
+	public void moveRight(){
+		x += speed;
 	}
-	public void moveDown(int distance){
-		y += distance;
-		repaint();
+	public void moveDown(){
+		y += speed;
 	}
-	public void moveUp(int distance){
-		y -= distance;
-		repaint();
+	public void moveUp(){
+		y -= speed;
 	}
 	public int getX(){
 		return x;
@@ -64,17 +76,22 @@ public class FightPane extends JPanel implements MouseListener{
 	}
 	public void fire(int func){
 		if(func == 0){
-			fx = x;
-			fy = y;
+			fx = x+50;
+			fy = y+50;
 			shouldFire = true;
 		}
 		else if(func == 1){
-			fx++;
+			fx += fspeed;
 		}
 		else{
 			shouldFire = false;
 		}
-		repaint();
+	}
+	public void pause(){
+		paused = true;
+	}
+	public void unpause(){
+		paused = false;
 	}
 	@Override
 	public void paint(Graphics g){
@@ -83,20 +100,30 @@ public class FightPane extends JPanel implements MouseListener{
 		g2.setColor(Color.BLUE);
 		g2.fillRect(0, 0, this.getWidth(), this.getHeight());
 		g2.setColor(lineCol);
-		g2.drawLine(x,y,x+100,y+100);
+		g2.fillOval(x,y,50,100);
+		g2.fillOval(x, y-40, 50, 50);
+		g2.fillRect(x+13, y+90, 25, 50);
+		g2.drawString(inf, x, y-50);
+		g2.drawString(msg,x,y+160);
 		if(shouldFire){
 			g2.setColor(fireCol);
 			g2.fillOval(fx, fy, 30, 10);
 		}
+		if(paused){
+			g2.setColor(Color.BLACK);
+			g2.drawString("PAUSED", this.getWidth()/2-5, 10);
+		}
 	}
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-		int mx = e.getX();
-		int my = e.getY();
-		x = mx;
-		y = my;
-		repaint();
+		if(!paused){
+			// TODO Auto-generated method stub
+			int mx = e.getX();
+			int my = e.getY();
+			x = mx-25;
+			y = my-50;
+			repaint();
+		}
 	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
