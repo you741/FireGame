@@ -1,6 +1,7 @@
 # FireGame
 This is a java game that is supposed to end up as a 1 v 1 game so you can fight your friends. In the DBZ universe.
 <h1>CONTROLS</h1>
+<strong>NOTE:</strong>Super Saiyan has only a 10% success rate
 <table style = "width:100%;table-layout:fixed;">
 <tr><td>Move</td><td>Arrow Keys</td></tr>
 <tr><td>Shoot</td><td>ENTER</td></tr>
