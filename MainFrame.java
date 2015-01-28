@@ -2,7 +2,7 @@
  * AUTHOR: YOU ZHOU
  * SOLO PROGRESS FOR AMUSEMENT
  */
-package main;
+//package main;
 
 import java.awt.*;
 import java.awt.event.*;
