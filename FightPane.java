@@ -14,20 +14,22 @@ public class FightPane extends JPanel implements MouseListener{
 	 */
 	private static final long serialVersionUID = 1L;
 	
-
+	Shape[] fireArray;
 	int x = 50;
-	int y = 50;
+	int y = 70;
 	int fx = x;
 	int fy = y;
 	int speed = 3;
-	int fspeed = 1;
+	int defaultfspeed = 3;
+	int fspeed = 3;
 	boolean shouldFire = false;
+	boolean shouldPunch = false;
 	boolean paused = false;
 	String inf = "Bob The Saiyan HP: 50";
 	String msg = "";
 	
-	Color lineCol = new Color(0,0,0);
-	Color fireCol = new Color(255,0,0);
+	Color lineCol = new Color(0,0,0);//Color of character
+	Color fireCol = new Color(255,0,0);//Color of fire shot
 	public FightPane(){
 		setLayout(new GridBagLayout());
 		addMouseListener(this);
@@ -93,6 +95,13 @@ public class FightPane extends JPanel implements MouseListener{
 	public void unpause(){
 		paused = false;
 	}
+	public void punch(int func){
+		if(func == 0)
+			shouldPunch = true;
+		else{
+			shouldPunch = false;
+		}
+	}
 	@Override
 	public void paint(Graphics g){
 		//This is the painting thing
@@ -105,9 +114,14 @@ public class FightPane extends JPanel implements MouseListener{
 		g2.fillRect(x+13, y+90, 25, 50);
 		g2.drawString(inf, x, y-50);
 		g2.drawString(msg,x,y+160);
+
 		if(shouldFire){
 			g2.setColor(fireCol);
 			g2.fillOval(fx, fy, 30, 10);
+		}
+		if(shouldPunch){
+			g2.setColor(lineCol);
+			g2.fillOval(x+50, y+40, 40, 40);
 		}
 		if(paused){
 			g2.setColor(Color.BLACK);
@@ -122,6 +136,7 @@ public class FightPane extends JPanel implements MouseListener{
 			int my = e.getY();
 			x = mx-25;
 			y = my-50;
+			setMsg("Instant Transmission");
 			repaint();
 		}
 	}
