@@ -15,6 +15,7 @@ This is a java game that is supposed to end up as a 1 v 1 game so you can fight 
 <tr><td>Super Saiyan JOE</td><td>X</td></tr>
 <tr><td>Jump JOE</td><td>SPACE</td></tr>
 <tr><td>Punch with Joe</td><td>Z</td></tr>
+<tr><td>Teleport Joe Back to screen</td><td>E</td></tr>
 <tr><td>Pause</td><td>P</td></tr>
 <tr><td>Close Game</td><td>ESC</td></tr>
 </table>
