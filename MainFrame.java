@@ -160,9 +160,9 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 					if(!transformed){
 						int luck = (int)(100*Math.random());
 						if(luck > 40 && luck < 55){
-							mpane.setSpeed(20);
+							mpane.setSpeed(mpane.speed + mpane.ssboost);
 							mpane.setColor(Color.yellow);
-							mpane.setFSpeed(10);
+							mpane.setFSpeed(mpane.fspeed + mpane.ssboost);
 							mpane.setFColor(Color.YELLOW);
 							count = 1000;
 							fcd2 = 50;
@@ -191,7 +191,7 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 					mpane.punch(1);
 				}
 				if(count<=0){
-					mpane.setSpeed(3);
+					mpane.setSpeed(mpane.defaultspeed);
 					mpane.setColor(Color.black);
 					mpane.setFSpeed(mpane.defaultfspeed);
 					mpane.setFColor(Color.red);
@@ -251,9 +251,9 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 					if(!transformed2){
 						int luck = (int)(100*Math.random());
 						if(luck > 45 && luck < 55){
-							mpane.setSpeed2(20);
+							mpane.setSpeed2(mpane.speed2 + mpane.ssboost2);
 							mpane.setColor2(Color.yellow);
-							mpane.setFSpeed2(10);
+							mpane.setFSpeed2(mpane.fspeed2 + mpane.ssboost2);
 							mpane.setFColor2(Color.YELLOW);
 							count2 = 1300;
 							fcd2 = 60;
@@ -296,7 +296,7 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 					mpane.punch2(1);
 				}
 				if(count2<=0){
-					mpane.setSpeed2(3);
+					mpane.setSpeed2(mpane.defaultspeed2);
 					mpane.setColor2(new Color(200,255,255));
 					mpane.setFSpeed2(mpane.defaultfspeed2);
 					mpane.setFColor2(Color.red);
