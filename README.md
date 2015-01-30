@@ -1,6 +1,7 @@
 # FireGame
 This is a java game that is supposed to end up as a 1 v 1 game so you can fight your friends. In the DBZ universe.
 <p>Hey if you guys on the hub have any suggestions to make my code nicer and neater, please say so. I am an amateur with java.</p>
+<p>Does anyone know how to make the paint less laggy and glitchy? If you could help it would be great. Thanks.</p>
 <h1>CONTROLS</h1>
 <strong>NOTE:</strong>Super Saiyan doesn't work on click. You need to hold it and hope you get a lucky number
 <table style = "width:100%;table-layout:fixed;">
