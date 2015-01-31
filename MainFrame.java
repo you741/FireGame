@@ -21,15 +21,10 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 	private final Set<Integer> pressed = new HashSet<Integer>();
 	boolean isQuit = false;//Checks if user quits
 	boolean shouldRun = true;//checks if it isn't paused
-	boolean fired = false;//checks if a shot has been fired
-	boolean punched = false;//checks if a punch has been thrown
+	//the following boolean is for player 1
 	boolean transformed = false;//checks if they are a super-saiyan
-	boolean jump = false;//checks if they jumped
-	//the following booleans are for the second character
-	boolean fired2 = false;
-	boolean punched2 = false;
+	//the following boolean is for the second character
 	boolean transformed2 = false;
-	boolean jump2 = false;
 	//NOTE: Timers are to make it real-time
 	int count = -1;//super-saiyan timer
 	int jTimer = -1;//jump timer
@@ -42,6 +37,8 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 	int sTimer2 = -1;//shot timer for character 2
 	int fcd2 = 75;//fire cooldown for character 2
 	int globalTimer = 0;//Total time since game started	
+	
+	JLabel timeLabel;
 	public MainFrame(FightPane pane){
 		mpane = pane;
 		setTitle("DBZ 1 v 1");
@@ -50,17 +47,21 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 		setUndecorated(true);
 		setVisible(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setLayout(new BorderLayout());
 		
 		addKeyListener(this);
 		
-		add(mpane);
+		add(mpane, BorderLayout.CENTER);
+		
+		timeLabel = new JLabel("Time: "+globalTimer);
+		add(timeLabel, BorderLayout.PAGE_START);
 	}
 	
 	@Override
 	public void keyPressed(KeyEvent arg0) {
 		// TODO Auto-generated method stub
 		int keyCode = arg0.getKeyCode();
-		if(!mpane.paused || keyCode == KeyEvent.VK_P || keyCode== KeyEvent.VK_ESCAPE){
+		if(!mpane.paused || (keyCode == KeyEvent.VK_P && !mpane.end) || keyCode== KeyEvent.VK_ESCAPE){
 
 			pressed.add(keyCode);
 			switch(keyCode){
@@ -104,8 +105,9 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 		// TODO Auto-generated method stub
 
 		while(!isQuit){
-			if(shouldRun){
+			if(shouldRun && !mpane.paused){
 				//the following are for character 1
+				//the following 4 if statements prevents variables from going below minimum value of an integer
 				if(count == Integer.MIN_VALUE){
 					count = -1;
 				}
@@ -122,6 +124,10 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 				jTimer--;
 				pTimer--;
 				sTimer--;
+				if(globalTimer == Integer.MAX_VALUE-1)
+					globalTimer = 0;
+				globalTimer++;
+				
 				if(pressed.contains(KeyEvent.VK_UP)){
 					mpane.moveUp();
 				}
@@ -138,10 +144,9 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 					if(sTimer < 0){
 						mpane.fire(0);
 						mpane.setMsg("Fired");
-						fired = false;
 						mpane.punch(0);
 						pTimer = 15;
-						sTimer = fcd;
+						sTimer = mpane.fcd2;
 					}
 				}
 				if(pressed.contains(KeyEvent.VK_NUMPAD0)){
@@ -158,27 +163,29 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 				}
 				if(pressed.contains(KeyEvent.VK_NUMPAD2)){
 					if(!transformed){
-						int luck = (int)(100*Math.random());
-						if(luck > 40 && luck < 55){
-							mpane.setSpeed(mpane.speed + mpane.ssboost);
-							mpane.setColor(Color.yellow);
-							mpane.setFSpeed(mpane.fspeed + mpane.ssboost);
-							mpane.setFColor(Color.YELLOW);
-							count = 1000;
-							fcd2 = 50;
-							mpane.setEColor(Color.green);
-							transformed = true;
-							mpane.setMsg("SUPER SAIYAN!!");
-						} else{
-							mpane.setMsg("Super Saiyan failed...");
+						mpane.energy -= 5;
+						if(mpane.energy < 0){
+							mpane.energy += 5;
 						}
+						else{
+							int luck = (int)(100*Math.random());
+							if(luck > 40 && luck < 55){
+								mpane.transform();
+								transformed = true;
+								count = 1000;
+							} else{
+								mpane.setMsg("Super Saiyan failed...");
+							}
+						}
+					}
+					else if(count > -400 && count < 0 && transformed){
+						mpane.setMsg("On Cooldown!");
 					}
 				}
 				if(sTimer >= 0){
 					mpane.fire(1);
 				}
 				if(sTimer == 0){
-					fired = false;
 					mpane.fire(2);		
 				}
 				if(jTimer > 5){
@@ -190,27 +197,23 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 				if(pTimer == 0){
 					mpane.punch(1);
 				}
-				if(count<=0){
-					mpane.setSpeed(mpane.defaultspeed);
-					mpane.setColor(Color.black);
-					mpane.setFSpeed(mpane.defaultfspeed);
-					mpane.setFColor(Color.red);
-					if(transformed)
-						mpane.setMsg("Normal Again...");
-					transformed = false;
-					fcd = 100;
-					mpane.setEColor(Color.white);
+				if(count==0){
+					mpane.transform();
 				}
-				if(count == Integer.MIN_VALUE){
+				if(count < -400){
+					transformed = false;
+				}
+				//the following 4 if statements prevents variables from going below minimum value of an integer
+				if(count == Integer.MIN_VALUE+1){
 					count = -1;
 				}
-				if(jTimer == Integer.MIN_VALUE){
+				if(jTimer == Integer.MIN_VALUE+1){
 					jTimer = -1;
 				}
-				if(pTimer == Integer.MIN_VALUE){
+				if(pTimer == Integer.MIN_VALUE+1){
 					pTimer = -1;
 				}
-				if(sTimer == Integer.MIN_VALUE){
+				if(sTimer == Integer.MIN_VALUE+1){
 					sTimer = -1;
 				}
 				//the following are for the 2nd character
@@ -234,35 +237,36 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 					if(sTimer2 < 0){
 						mpane.fire2(0);
 						mpane.setMsg2("Fired");
-						fired2 = false;
 						mpane.punch2(0);
 						pTimer2 = 15;
-						sTimer2 = fcd;
+						sTimer2 = mpane.fcd;
 					}
 				}
 				if(pressed.contains(KeyEvent.VK_SPACE)){
 					if(jTimer2 < -10){
 						jTimer2 = 10;
-						jump2 = false;
 						mpane.setMsg2("Jumped");
 					}
 				}
 				if(pressed.contains(KeyEvent.VK_X)){
 					if(!transformed2){
-						int luck = (int)(100*Math.random());
-						if(luck > 45 && luck < 55){
-							mpane.setSpeed2(mpane.speed2 + mpane.ssboost2);
-							mpane.setColor2(Color.yellow);
-							mpane.setFSpeed2(mpane.fspeed2 + mpane.ssboost2);
-							mpane.setFColor2(Color.YELLOW);
-							count2 = 1300;
-							fcd2 = 60;
-							mpane.setEColor2(Color.green);
-							transformed2 = true;
-							mpane.setMsg2("SUPER SAIYAN!!");
-						} else{
-							mpane.setMsg2("Super Saiyan failed...");
+						mpane.energy2 -= 5;
+						if(mpane.energy2 < 0){
+							mpane.energy2 += 5;
 						}
+						else{
+							int luck = (int)(100*Math.random());
+							if(luck > 45 && luck < 55){
+								transformed2 = true;
+								mpane.transform2();
+								count2 = 1300;
+							} else{
+								mpane.setMsg2("Super Saiyan failed...");
+							}
+						}
+					}
+					else if(count2 < 0 && count2 > -300 && transformed2){
+						mpane.setMsg2("On Cooldown!");
 					}
 				}
 				if(pressed.contains(KeyEvent.VK_E)){
@@ -271,7 +275,6 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 				}
 				if(pressed.contains(KeyEvent.VK_Z)){
 					if(pTimer2 < -5){
-						punched2 = false;
 						mpane.punch2(0);
 						pTimer2 = 15;
 						mpane.setMsg2("Punched");
@@ -281,7 +284,6 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 					mpane.fire2(1);
 				}
 				if(sTimer2 == 0){
-					fired2 = false;
 					mpane.fire2(2);
 					
 				}
@@ -295,18 +297,28 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 				if(pTimer2 == 0){
 					mpane.punch2(1);
 				}
-				if(count2<=0){
-					mpane.setSpeed2(mpane.defaultspeed2);
-					mpane.setColor2(new Color(200,255,255));
-					mpane.setFSpeed2(mpane.defaultfspeed2);
-					mpane.setFColor2(Color.red);
-					if(transformed2)
-						mpane.setMsg2("Normal Again...");
-					transformed2 = false;
-					fcd2 = 100;
-					mpane.setEColor2(Color.red);
+				if(count2==0){
+					mpane.transform2();
 				}
-			}
+				if(count2 < -300){
+					transformed2 = false;	
+				}
+				if(mpane.energy < mpane.maxenergy && globalTimer % 100 == 0)
+					mpane.setEnergy(mpane.energy + mpane.eps);
+				if(mpane.energy2 < mpane.maxenergy2 && globalTimer % 100 == 0)
+					mpane.setEnergy2(mpane.energy2 + mpane.eps2);
+				if(mpane.health < mpane.maxhealth && globalTimer % 100 == 0)
+					mpane.setHealth(mpane.health + mpane.hps);
+				if(mpane.health2 < mpane.maxhealth2 && globalTimer % 100 == 0)
+					mpane.setHealth2(mpane.health2 + mpane.hps2);
+				int gtSec = globalTimer/100;//global timer in seconds
+				timeLabel.setText("Time: "+gtSec);
+				if(mpane.end){
+					String winner = mpane.dead?mpane.name2:mpane.name;
+					timeLabel.setText(winner+" wins! Total time: "+gtSec);
+				}
+				
+			}	
 			try {
 				mpane.repaint();
 				Thread.sleep(10);

@@ -15,6 +15,10 @@ public class FightPane extends JPanel implements MouseListener{
 	private static final long serialVersionUID = 1L;
 	
 	//The following variables are for character's stats
+	int defaultAttack = 11;//character's default attack
+	int defaultDefense = 4;//character's default defense
+	int defaultAttack2 = 8;//character 2's default attack
+	int defaultDefense2 = 3;//character 2's default defense
 	int attack = 10;//character's attack
 	int attack2 = 8;//character 2's attack
 	int defense = 4;//character's defense
@@ -38,7 +42,14 @@ public class FightPane extends JPanel implements MouseListener{
 	int energy2 = 400;//character 2's energy
 	int maxenergy = energy;//character's maximum energy
 	int maxenergy2 = energy2;//character 2's maximum energy
-	
+	int fcd = 120;//character 1's fire cooldown
+	int fcd2 = 100;//character 2's fire cooldown
+	int eps = 5;//character's energy regeneration per second
+	int eps2 = 2;//character 2's energy regeneration per second
+	int hps = 3;//character's health regeneration per second
+	int hps2 = 4;//character 2's health regeneration per second
+	String name = "Bob";
+	String name2 = "Joe";
 	//the following are to help with positioning and animations
 	Shape[] fireArray;//WIP
 
@@ -59,16 +70,19 @@ public class FightPane extends JPanel implements MouseListener{
 	boolean shouldFire = false;//if character should fire
 	boolean shouldPunch = false;//if character should punch
 	boolean paused = false;//if the game is paused
-	String inf = "Bob The Saiyan HP: "+health;//label appears above character
+	String inf = name+" The Saiyan HP: "+health+" EP: "+energy;//label appears above character
 	String msg = "";//label appears below character
 	boolean shouldFire2 = false;//if character 2 should fire
 	boolean shouldPunch2 = false;//if character 2 should punch
 	boolean shouldGalickGun2 = false;//if character 2 should use galick gun
 	int gIncrease = 0;//Affects size of ball by galick gun
-	String inf2 = "Joe The Saiyan HP: "+health2;//appears above character 2
+	String inf2 = name2+" The Saiyan HP: "+health2+" EP: "+energy2;//appears above character 2
 	String msg2 = "";//appears below character 2
 	boolean dead = false;//if character 1 is dead
 	boolean dead2 = false;//if character 2 is dead
+	boolean ss = false;//checks if player is super saiyan
+	boolean ss2 = false;//checks if player 2 is super saiyan
+	boolean end = false;//checks if game ended
 	
 	Color lineCol = new Color(0,0,0);//Color of character
 	Color fireCol = new Color(255,0,0);//Color of fire shot
@@ -78,6 +92,9 @@ public class FightPane extends JPanel implements MouseListener{
 	Color eyeCol2 = new Color(255,0,0);//Color of eye for character 2
 	
 	public FightPane(){
+		setOpaque(true);
+		setPreferredSize(new Dimension(610,610));
+		setBackground(Color.blue);
 		setLayout(new GridBagLayout());
 		addMouseListener(this);
 	}
@@ -99,6 +116,7 @@ public class FightPane extends JPanel implements MouseListener{
 			dead = true;
 			setMsg2("YOU WIN");
 			paused = true;
+			end = true;
 		}
 	}	
 	public void setEnergy(int ep){
@@ -110,6 +128,7 @@ public class FightPane extends JPanel implements MouseListener{
 			dead2 = true;
 			setMsg("YOU WIN");
 			paused = true;
+			end = true;
 		}
 	}	
 	public void setEnergy2(int ep){
@@ -185,8 +204,9 @@ public class FightPane extends JPanel implements MouseListener{
 			fx += dirf*fspeed;
 			int side = dirf == 1?30:0;
 			if(fx + side > x2 && fx + side < x2 + 50 && ((fy + 10 < y2 + 140 && fy + 10 > y2 - 40)||(fy < y2 + 140 && y > y2 - 40))){
-				setHealth2(health2 - attack + defense2);
-				setInf2("Joe The Saiyan HP: "+health2);
+				int offset = attack < defense2?-1:-attack + defense2;
+				setHealth2(health2 + offset);
+				setInf2(name2+" The Saiyan HP: "+health2+" EP: "+energy2);
 				fire(-1);
 			}
 		}
@@ -196,16 +216,54 @@ public class FightPane extends JPanel implements MouseListener{
 	}
 	public void punch(int func){
 		if(func == 0){
+			energy -= 2;
 			shouldPunch = true;
-			int pdx = dir == 1?50:-40;
-			boolean hit = dir == 1?x + pdx + 50 > x2 && x + pdx + 50 < x2 + 50:x + pdx - 40 < x2 + 50 && x + pdx - 40 > x2;
-			if(hit){
-				setHealth2(health2 - attack + defense2);
-				setInf2("Joe the Saiyan HP: "+health2);
+			int pdx = dir == 1?50:-50;
+			boolean hit = dir == 1?x + pdx + 50 > x2 && x + pdx + 50 < x2 + 50:x + pdx< x2 + 50 && x + pdx > x2;//checks if punch hits anyone
+			if(energy < 0){
+				shouldPunch = false;
+				hit = false;
+				energy += 2;
+			}
+			if(hit && ((y+40 > y2-40 && y+40 < y2+140)||(y+80 > y2 && y+80 < y2+140))){
+				if(dir == 1){
+					moveRight2();
+					dir2 = dir2 == 1?-1:1;
+				}else{
+					moveLeft2();
+					dir2 = dir2 == 1?-1:1;
+				}
+				int offset = attack < defense2?-1:-attack + defense2;
+				setHealth2(health2 + offset);
 			}
 		}
 		else{
 			shouldPunch = false;
+		}
+	}
+	public void transform(){
+		if(ss){
+			ss = false;
+			attack = defaultAttack;
+			defense = defaultDefense;
+			setSpeed(defaultspeed);
+			setColor(Color.black);
+			setFSpeed(defaultfspeed);
+			setFColor(Color.red);
+			fcd = 120;
+			setEColor(Color.white);
+			setMsg("Normal again...");
+		}else{
+			ss = true;
+			attack *= ssboost;
+			defense *= ssboost;
+			setSpeed(speed + ssboost);
+			setColor(Color.YELLOW);
+			setFSpeed(defaultfspeed + ssboost);
+			setFColor(Color.YELLOW);
+			fcd = 60;
+			setEColor(Color.green);
+			setMsg("SUPER SAIYAN!!!");
 		}
 	}
 	public void pause(){
@@ -282,13 +340,19 @@ public class FightPane extends JPanel implements MouseListener{
 			fy2 = y2+50;
 			shouldFire2 = true;
 			dirf2 = dir2;
+			energy2 -= 1;
+			if(energy2 < 0){
+				energy2 += 1;
+				shouldFire2 = false;
+			}
 		}
 		else if(func == 1){
 			fx2 += dirf2*fspeed2;
 			int side = dirf2 == 1?30:0;
 			if(fx2 + side > x && fx2 + side < x + 50 && ((fy2 + 10 < y + 140 && fy2 + 10 > y - 40)||(fy2 < y + 140 && y2 > y - 40))){
-				setHealth(health - attack2 + defense);
-				setInf("Bob The Saiyan HP: "+health);
+				int offset = attack2 < defense?-1:-attack2 + defense;
+				setHealth(health+offset);
+				setInf(name+" The Saiyan HP: "+health+" EP: "+energy);
 				fire2(-1);
 			}
 		}
@@ -297,14 +361,28 @@ public class FightPane extends JPanel implements MouseListener{
 		}
 	}
 	public void punch2(int func){
-		if(func == 0)
+		if(func == 0){
+			energy2 -= 2;
 			shouldPunch2 = true;
-			int pdx = dir == 1?50:-40;
-			boolean hit = dir2 == 1?x2 + pdx + 50 > x && x2 + pdx + 50 < x + 50:x2 + pdx - 40 < x + 50 && x2 + pdx - 40 > x;
-			if(hit){
-				setHealth(health - attack2 + defense);
-				setInf("Bob the Saiyan HP: "+health);
+			int pdx = dir2 == 1?50:-50;
+			boolean hit = dir2 == 1?x2 + pdx + 50 > x && x2 + pdx + 50 < x + 50:x2 + pdx < x + 50 && x2 + pdx  > x;
+			if(energy2 < 0){
+				shouldPunch2 = false;
+				hit = false;
+				energy2 += 2;
 			}
+			if(hit && ((y2+40 > y-40 && y2+40 < y+140)||(y2+80 > y && y2+80 < y+140))){
+				if(dir2 == 1){
+					moveRight();
+					dir = dir == 1?-1:1;
+				}else{
+					moveLeft();
+					dir = dir == 1?-1:1;
+				}
+				int offset = attack2 < defense?-1:-attack2 + defense;
+				setHealth(health + offset);
+			}
+		}
 		else{
 			shouldPunch2 = false;
 		}
@@ -314,83 +392,102 @@ public class FightPane extends JPanel implements MouseListener{
 			shouldGalickGun2 = true;
 		}
 	}
-	public void jump(int func){
-		if(func == 0){
-			x += jumpSpeed;
-		}
-		if(func == 1){
-			x -= jumpSpeed;
-		}
-		if(func == 2){
-			x2+= jumpSpeed;
-		}
-		if(func == 3){
-			x2-= jumpSpeed;
+	public void transform2(){
+		if(ss2){
+			ss2 = false;
+			attack2 = defaultAttack2;
+			defense2 = defaultDefense2;
+			setSpeed2(defaultspeed2);
+			setColor2(new Color(200,255,255));
+			setFSpeed2(defaultfspeed2);
+			setFColor2(Color.magenta);
+			fcd2 = 100;
+			setEColor2(Color.red);
+			setMsg2("Normal again...");
+		}else{
+			ss2 = true;
+			attack2 *= ssboost2;
+			defense2 *= ssboost2;
+			setSpeed2(speed2 + ssboost2);
+			setColor2(Color.YELLOW);
+			setFSpeed2(defaultfspeed2 + ssboost2);
+			setFColor2(Color.YELLOW);
+			fcd2 = 50;
+			setEColor2(Color.green);
+			setMsg2("SUPER SAIYAN!!!");
 		}
 	}
 	@Override
-	public void paint(Graphics g){
+	public void paintComponent(Graphics g){
 		
 		//This is the painting thing
-		Graphics2D g2 = (Graphics2D)g;
-		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
-		//background and masks old paint
-		g2.setColor(Color.BLUE);
-		g2.fillRect(0, 0, this.getWidth(), this.getHeight());
+		super.paintComponent(g);
+
 		//draws character 1
 		if(!dead){
-			g2.setColor(lineCol);
-			g2.fillOval(x,y,50,100);
-			g2.fillOval(x, y-40, 50, 50);
-			g2.fillRect(x+13, y+90, 25, 50);
-			g2.drawString(inf, x, y-50);
-			g2.drawString(msg,x,y+160);
-			g2.setColor(eyeCol);
+			g.setColor(lineCol);
+			g.fillOval(x,y,50,100);
+			g.fillOval(x, y-40, 50, 50);
+			g.fillRect(x+13, y+90, 25, 50);
+			g.drawString(inf, x, y-50);
+			g.drawString(msg,x,y+160);
+			g.setColor(eyeCol);
 			int edx = dir == 1?30:10;
-			g2.fillOval(x+edx, y-20, 10, 10);
-			g2.setColor(lineCol);
+			g.fillOval(x+edx, y-20, 10, 10);
+			g.setColor(lineCol);
 			if(shouldFire){
-				g2.setColor(fireCol);
-				g2.fillOval(fx, fy, 30, 10);
+				g.setColor(fireCol);
+				g.fillOval(fx, fy, 30, 10);
 			}
 			if(shouldPunch){
 				int pdx = dir == 1?50:-40;
-				g2.setColor(lineCol);
-				g2.fillOval(x+pdx, y+40, 40, 40);
+				g.setColor(lineCol);
+				g.fillOval(x+pdx, y+40, 40, 40);
 			}
 		}
 		//draws character 2
 		if(!dead2){
-			g2.setColor(lineCol2);
-			g2.fillOval(x2,y2,50,100);
-			g2.fillOval(x2, y2-40, 50, 50);
-			g2.fillRect(x2+13, y2+90, 25, 50);
-			g2.drawString(inf2, x2, y2-50);
-			g2.drawString(msg2,x2,y2+160);
-			g2.setColor(eyeCol2);
+			g.setColor(lineCol2);
+			g.fillOval(x2,y2,50,100);
+			g.fillOval(x2, y2-40, 50, 50);
+			g.fillRect(x2+13, y2+90, 25, 50);
+			g.drawString(inf2, x2, y2-50);
+			g.drawString(msg2,x2,y2+160);
+			g.setColor(eyeCol2);
 			int edx2 = dir2 == 1?30:10;
-			g2.fillOval(x2+edx2, y2-20, 10, 10);
-			g2.setColor(lineCol2);
+			g.fillOval(x2+edx2, y2-20, 10, 10);
+			g.setColor(lineCol2);
 			if(shouldFire2){
-				g2.setColor(fireCol2);
-				g2.fillOval(fx2, fy2, 30, 10);
+				g.setColor(fireCol2);
+				g.fillOval(fx2, fy2, 30, 10);
 			}
 			if(shouldPunch2){
 				int pdx = dir2 == 1?50:-40;
-				g2.setColor(lineCol2);
-				g2.fillOval(x2+pdx, y2+40, 40, 40);
+				g.setColor(lineCol2);
+				g.fillOval(x2+pdx, y2+40, 40, 40);
 			}
 			if(shouldGalickGun2){
 				int pdx = dir2 == 1?50:-40;
-				g2.setColor(lineCol2);
-				g2.fillOval(x2+pdx, y2+40, 40, 40);
+				g.setColor(lineCol2);
+				g.fillOval(x2+pdx, y2+40, 40, 40);
 			}
-		}
 
-		if(paused){
-			g2.setColor(Color.BLACK);
-			g2.drawString("PAUSED", this.getWidth()/2-5, 10);
+		}
+		if(energy < 0)
+			energy = 0;
+		setInf2(name2+" The Saiyan HP: "+health2+" EP: "+energy2);
+		setInf(name+" The Saiyan HP: "+health+" EP: "+energy);
+		if(health > maxhealth)
+			health = maxhealth;
+		if(health2 > maxhealth2)
+			health2 = maxhealth2;
+		if(energy > maxenergy)
+			energy = maxenergy;
+		if(energy2 > maxenergy2)
+			energy2 = maxenergy2;
+		if(paused && !end){
+			g.setColor(Color.BLACK);
+			g.drawString("PAUSED", this.getWidth()/2-5, 10);
 		}
 
 		
