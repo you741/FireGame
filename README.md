@@ -24,3 +24,4 @@ This is a java game that is supposed to end up as a 1 v 1 game so you can fight 
 <tr><td>Pause</td><td>P</td></tr>
 <tr><td>Close Game</td><td>ESC</td></tr>
 </table>
+<p>Also you can't charge or use Galick Gun while doing any other action. It'd be way too cheap to hold Super Saiyan and charge. I will make it so you can't do super saiyan with other actions either later.</p>

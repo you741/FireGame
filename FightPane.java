@@ -15,14 +15,14 @@ public class FightPane extends JPanel implements MouseListener{
 	private static final long serialVersionUID = 1L;
 	
 	//The following variables are for character's stats
-	int defaultAttack = 10;//character's default attack
-	int defaultDefense = 4;//character's default defense
+	int defaultAttack = 11;//character's default attack
+	int defaultDefense = 6;//character's default defense
 	int defaultAttack2 = 8;//character 2's default attack
-	int defaultDefense2 = 5;//character 2's default defense
-	int attack = 12;//character's attack
+	int defaultDefense2 = 4;//character 2's default defense
+	int attack = 11;//character's attack
 	int attack2 = 8;//character 2's attack
-	int defense = 5;//character's defense
-	int defense2 = 3;//character 2's defense
+	int defense = 6;//character's defense
+	int defense2 = 4;//character 2's defense
 	int speed = 3;//characters speed
 	int defaultspeed = 3;//characters default speed
 	int defaultfspeed = 5;//characters default fire speed
@@ -33,8 +33,8 @@ public class FightPane extends JPanel implements MouseListener{
 	int fspeed2 = 3;//character 2's fire speed
 	int ssboost = 5;//super saiyan boost
 	int ssboost2 = 4;//super saiyan boost for character 2
-	int jumpSpeed = 10;//jumpspeed
-	int health = 1000;//character's health
+	int jumpSpeed = 10;//jumpspeed (unused currently)
+	int health = 1200;//character's health
 	int health2 = 1500;//character 2's health
 	int maxhealth = health;//character's maximum health
 	int maxhealth2 = health2;//character 2's maximum health
@@ -43,7 +43,7 @@ public class FightPane extends JPanel implements MouseListener{
 	int maxenergy = energy;//character's maximum energy
 	int maxenergy2 = energy2;//character 2's maximum energy
 	int fcd = 120;//character 1's fire cooldown
-	int fcd2 = 100;//character 2's fire cooldown
+	int fcd2 = 90;//character 2's fire cooldown
 	int eps = 5;//character's energy regeneration per second
 	int eps2 = 3;//character 2's energy regeneration per second
 	int hps = 5;//character's health regeneration per second
@@ -86,6 +86,7 @@ public class FightPane extends JPanel implements MouseListener{
 	boolean ss = false;//checks if player is super saiyan
 	boolean ss2 = false;//checks if player 2 is super saiyan
 	boolean end = false;//checks if game ended
+	boolean canTele = true;//checks if player 1 can teleport
 	
 	Color lineCol = new Color(0,0,0);//Color of character
 	Color fireCol = new Color(255,0,0);//Color of fire shot
@@ -129,7 +130,9 @@ public class FightPane extends JPanel implements MouseListener{
 		energy = ep;
 	}
 	public void setHealth2(int hp){
+		int loss = health2 - hp;
 		health2 = hp;
+		health += loss/6;
 		if(health2 <= 0){
 			dead2 = true;
 			setMsg("YOU WIN");
@@ -160,6 +163,9 @@ public class FightPane extends JPanel implements MouseListener{
 	}
 	public void setEColor(Color newC){
 		eyeCol = newC;
+	}
+	public void setTele(boolean newV){
+		canTele = newV;
 	}
 	public void moveLeft(){
 		x -= speed;
@@ -404,7 +410,7 @@ public class FightPane extends JPanel implements MouseListener{
 			shouldPunch2 = false;
 		}
 	}
-	public void galickGun2(int func){//unused function
+	public void galickGun2(int func){
 		if(func == 0){
 			fx2 = x2 + (dir2*50);
 			fy2 = y2 + 50;
@@ -422,9 +428,9 @@ public class FightPane extends JPanel implements MouseListener{
 			if(shouldGalickGun2){
 				fx2 += dirf2*fspeed2;
 				int side = dirf2 == 1?100:0;
-				if(fx2 + side < x + 50 && fx2 + side > x && (fy2+40 > y-40 || fy2 < y+140)){
+				if(fx2 + side < x + 50 && fx2 + side > x && ((fy2+40 > y-40 && fy2+40 < y+140)||(fy2 > y-40 && fy2 < y+140))){
 					galickGun2(-1);
-					setHealth(health - (attack2*10) - defense2);
+					setHealth(health - ((maxhealth - health)/3) - (attack2*9) + (defense/4));
 					setInf(name+" The Saiyan HP: "+health+" EP: "+energy);
 				}
 			}
@@ -526,15 +532,11 @@ public class FightPane extends JPanel implements MouseListener{
 			if(ss)
 				transform();
 		}
-		if(paused && !end){
-			g.setColor(Color.BLACK);
-			g.drawString("PAUSED", this.getWidth()/2-5, 10);
-			setMsg("YOU WIN!");
-			setMsg2("YOU WIN!");
-		}
 		if(end){
 			setColor(Color.red);
 			setColor2(Color.pink);
+			setMsg("YOU WIN!");
+			setMsg2("YOU WIN!");
 		}else{
 			if(energy2 < 0){
 				energy2 = 0;
@@ -556,13 +558,16 @@ public class FightPane extends JPanel implements MouseListener{
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if(!paused){
-			// TODO Auto-generated method stub
-			int mx = e.getX();
-			int my = e.getY();
-			x = mx-25;
-			y = my-50;
-			setMsg("Instant Transmission");
-			repaint();
+			if(canTele){
+				// TODO Auto-generated method stub
+				energy -= 10;
+				int mx = e.getX();
+				int my = e.getY();
+				x = mx-25;
+				y = my-50;
+				setMsg("Instant Transmission");
+				repaint();
+			}
 		}
 	}
 	@Override

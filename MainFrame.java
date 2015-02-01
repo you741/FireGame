@@ -19,8 +19,7 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 	JButton btn = new JButton("you dumb");
 	FightPane mpane;
 	private final Set<Integer> pressed = new HashSet<Integer>();
-	Set<Integer> p1 = new HashSet<Integer>();
-	Set<Integer> p2 = new HashSet<Integer>();
+	
 	boolean isQuit = false;//Checks if user quits
 	boolean shouldRun = true;//checks if it isn't paused
 	//the following boolean is for player 1
@@ -41,7 +40,11 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 	int fcd2 = 75;//fire cooldown for character 2
 	int globalTimer = 0;//Total time since game started	
 	
-	JLabel timeLabel;
+	JLabel timeLabel = new JLabel("Time: 0");
+	JLabel pauseLabel = new JLabel("PAUSED");
+	//below is an array that contains all elements that have to do with character 1
+	int[] p1 = {KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_RIGHT,KeyEvent.VK_LEFT,KeyEvent.VK_NUMPAD0,KeyEvent.VK_NUMPAD1,KeyEvent.VK_NUMPAD2,KeyEvent.VK_NUMPAD3,KeyEvent.VK_ENTER};//Any key that player 1 uses
+	int[] p2 = {KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_SPACE,KeyEvent.VK_Z,KeyEvent.VK_X,KeyEvent.VK_C,KeyEvent.VK_F,KeyEvent.VK_E,KeyEvent.VK_G};//Any key that player 2 uses
 	public MainFrame(FightPane pane){
 		mpane = pane;
 		setTitle("DBZ 1 v 1");
@@ -57,9 +60,20 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 		add(mpane, BorderLayout.CENTER);
 		JPanel topPane = new JPanel();
 		topPane.setBackground(Color.gray);
-		timeLabel = new JLabel("Time: "+globalTimer);
-		topPane.add(timeLabel);
+		topPane.setLayout(new BorderLayout());
 
+		JButton qbutton = new JButton("QUIT");
+		qbutton.setBackground(Color.red);
+		qbutton.addActionListener(this);
+		topPane.add(qbutton, BorderLayout.LINE_END);
+		
+		timeLabel.setText("Time: "+globalTimer);
+		topPane.add(timeLabel, BorderLayout.LINE_START);
+
+		pauseLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		pauseLabel.setVisible(false);
+		topPane.add(pauseLabel, BorderLayout.CENTER);
+		
 		add(topPane, BorderLayout.PAGE_START);
 	}
 	
@@ -74,11 +88,13 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 				//the following are for pause and quit
 				case KeyEvent.VK_P:
 					shouldRun = shouldRun?false:true;
-					if(shouldRun)
+					if(shouldRun){
 						mpane.unpause();
+						pauseLabel.setVisible(false);
+					}
 					else{
 						mpane.pause();
-						timeLabel.setText("PAUSED Time: "+globalTimer/100);
+						pauseLabel.setVisible(true);
 					}
 					break;
 				case KeyEvent.VK_ESCAPE:
@@ -134,7 +150,11 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 				if(globalTimer == Integer.MAX_VALUE-1)
 					globalTimer = 0;
 				globalTimer++;
-				
+				int p1Act = 0;//number of player 1 actions
+				for(int i = 0;i < p1.length;i++){
+					if(pressed.contains(p1[i]))
+						p1Act++;
+				}
 				if(pressed.contains(KeyEvent.VK_UP)){
 					mpane.moveUp();
 				}
@@ -178,7 +198,7 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 						mpane.setMsg("Punched");
 					}
 				}
-				if(pressed.contains(KeyEvent.VK_NUMPAD2)){
+				if(pressed.contains(KeyEvent.VK_NUMPAD2)&&p1Act < 2){
 					if(!transformed){
 						mpane.energy -= 2;
 						if(mpane.energy < 0){
@@ -200,7 +220,7 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 						mpane.setMsg("On Cooldown!");
 					}
 				}
-				if(pressed.contains(KeyEvent.VK_NUMPAD3)&&globalTimer%10 == 0){
+				if(pressed.contains(KeyEvent.VK_NUMPAD3)&&globalTimer%10 == 0&&p1Act < 2){
 					mpane.charge();
 				}
 				if(mpane.energy <= 0){
@@ -254,6 +274,11 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 				pTimer2--;
 				sTimer2--;
 				gTimer2--;
+				int p2Act = 0;//number of player 2 actions
+				for(int i = 0;i < p2.length;i++){
+					if(pressed.contains(p2[i]))
+						p2Act++;
+				}
 				if(pressed.contains(KeyEvent.VK_W)){
 					mpane.moveUp2();
 				}
@@ -281,10 +306,10 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 						mpane.setMsg2("Jumped");
 					}
 				}
-				if(pressed.contains(KeyEvent.VK_C)&&globalTimer%10 == 0){
+				if(pressed.contains(KeyEvent.VK_C)&&globalTimer%10 == 0&&p2Act < 2){
 					mpane.charge2();
 				}
-				if(pressed.contains(KeyEvent.VK_X)){
+				if(pressed.contains(KeyEvent.VK_X)&&p2Act<2){
 					if(!transformed2){
 						mpane.energy2 -= 5;
 						if(mpane.energy2 < 0){
@@ -318,7 +343,7 @@ public class MainFrame extends JFrame implements Runnable, KeyListener, ActionLi
 					}
 				}
 				//galick gun
-				if(pressed.contains(KeyEvent.VK_G) && gTimer2 < 0){
+				if(pressed.contains(KeyEvent.VK_G) && gTimer2 < 0&&p2Act < 2){
 					mpane.galickGun2(0);
 					gTimer2 = mpane.fcd2;
 				}
